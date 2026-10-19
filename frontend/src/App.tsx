@@ -67,6 +67,20 @@ export const App: React.FC = () => {
     }
   };
 
+  const [isSeeding, setIsSeeding] = useState(false);
+
+  const handleSeedSimulation = async () => {
+    setIsSeeding(true);
+    try {
+      await api.seedSimulation();
+      await fetchIncidents();
+    } catch (err) {
+      console.error('Failed to seed simulation scenario', err);
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
   return (
     <div className="app-container">
       {/* ── Top Navigation Bar ────────────────────────────────────────── */}
@@ -86,6 +100,22 @@ export const App: React.FC = () => {
             <span className="live-dot" />
             <span>{systemOnline ? 'AI Coordination Live' : 'Reconnecting...'}</span>
           </div>
+
+          <button
+            id="seed-simulation-demo-btn"
+            className="nav-btn"
+            style={{
+              border: '1px solid rgba(168, 85, 247, 0.4)',
+              background: 'rgba(168, 85, 247, 0.1)',
+              color: '#d8b4fe',
+            }}
+            onClick={handleSeedSimulation}
+            disabled={isSeeding}
+            title="Load realistic multi-hazard demo simulation data"
+          >
+            <span>⚡</span>
+            <span>{isSeeding ? 'Loading...' : 'Demo Scenario'}</span>
+          </button>
 
           <button
             id="open-report-incident-modal-btn"
@@ -176,9 +206,24 @@ export const App: React.FC = () => {
                       onClick={() => setSelectedIncident(inc)}
                     >
                       <div className="card-top">
-                        <span className={`card-category-badge cat-badge-${inc.category}`}>
-                          {getCategoryEmoji(inc.category)} {inc.category.replace('_', ' ')}
-                        </span>
+                        <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+                          <span className={`card-category-badge cat-badge-${inc.category}`}>
+                            {getCategoryEmoji(inc.category)} {inc.category.replace('_', ' ')}
+                          </span>
+                          {inc.source === 'simulation' ? (
+                            <span style={{ fontSize: '0.62rem', background: 'rgba(234, 88, 12, 0.2)', color: '#fb923c', padding: '2px 5px', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.04em' }}>
+                              SIMULATION
+                            </span>
+                          ) : inc.source === 'sensor' ? (
+                            <span style={{ fontSize: '0.62rem', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '2px 5px', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.04em' }}>
+                              SENSOR
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: '0.62rem', background: 'rgba(52, 211, 153, 0.2)', color: '#34d399', padding: '2px 5px', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.04em' }}>
+                              CITIZEN
+                            </span>
+                          )}
+                        </div>
                         <span className={`badge-status status-${inc.status}`}>
                           {inc.status}
                         </span>

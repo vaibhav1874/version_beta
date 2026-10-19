@@ -157,6 +157,17 @@ export const api = {
     return data;
   },
 
+  // Simulation & Demo Scenarios
+  seedSimulation: async () => {
+    const { data } = await apiClient.post('/simulation/seed');
+    return data;
+  },
+
+  resetSimulation: async () => {
+    const { data } = await apiClient.post('/simulation/reset');
+    return data;
+  },
+
   checkHealth: async () => {
     const { data } = await apiClient.get('/health');
     return data;

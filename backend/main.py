@@ -54,7 +54,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from routers import incidents_router, responders_router
+
+# --- Include API Routers ---
+app.include_router(incidents_router)
+app.include_router(responders_router)
+
+
 # --- Mount static files for uploaded images ---
+upload_path = Path(settings.UPLOAD_DIR)
+upload_path.mkdir(parents=True, exist_ok=True)
 app.mount(
     "/uploads",
     StaticFiles(directory=settings.UPLOAD_DIR),

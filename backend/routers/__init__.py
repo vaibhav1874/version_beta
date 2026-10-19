@@ -1,1 +1,8 @@
-# Project JEEVAN — Routers package
+"""
+Project JEEVAN — Routers package exports
+"""
+
+from routers.incidents import router as incidents_router
+from routers.responders import router as responders_router
+
+__all__ = ["incidents_router", "responders_router"]

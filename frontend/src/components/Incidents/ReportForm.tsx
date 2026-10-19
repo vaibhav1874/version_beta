@@ -32,12 +32,17 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadedPath, setUploadedPath] = useState<string | null>(null);
   
+  // AI Suggestions & Real-Time Alerts
+  const [aiCategorySuggestion, setAiCategorySuggestion] = useState<HazardCategory | null>(null);
+  const [aiConfidence, setAiConfidence] = useState<number | null>(null);
+  const [duplicateAlert, setDuplicateAlert] = useState<string | null>(null);
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  // Handle photo selection & upload preview
+  // Handle photo selection & upload preview with instant AI classification
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -47,9 +52,44 @@ export const ReportForm: React.FC<ReportFormProps> = ({
       try {
         const uploadRes = await api.uploadImage(file);
         setUploadedPath(uploadRes.image_path);
+
+        // Run AI image classifier
+        try {
+          const aiRes = await api.classifyImage(file);
+          if (aiRes.suggested_category) {
+            setAiCategorySuggestion(aiRes.suggested_category as HazardCategory);
+            setAiConfidence(aiRes.confidence);
+          }
+        } catch (aiErr) {
+          console.warn('AI image suggestion skipped', aiErr);
+        }
       } catch (err) {
         console.error('Image upload failed', err);
         setErrorMsg('Failed to upload image evidence. You can still submit without it.');
+      }
+    }
+  };
+
+  // Run duplicate check when user finishes typing description
+  const handleDescriptionBlur = async () => {
+    const latNum = parseFloat(latitude);
+    const lonNum = parseFloat(longitude);
+    if (!isNaN(latNum) && !isNaN(lonNum) && title.trim().length >= 3 && description.trim().length >= 10) {
+      try {
+        const res = await api.checkDuplicates({
+          title: title.trim(),
+          description: description.trim(),
+          latitude: latNum,
+          longitude: lonNum,
+          category,
+        });
+        if (res.is_duplicate) {
+          setDuplicateAlert(res.message);
+        } else {
+          setDuplicateAlert(null);
+        }
+      } catch (dupErr) {
+        console.warn('Duplicate check skipped', dupErr);
       }
     }
   };
@@ -183,6 +223,44 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                 <option value="severe_weather">🌪️ Severe Weather & Blocked Roads</option>
                 <option value="road_accident">🚗 Road Accidents</option>
               </select>
+              {aiCategorySuggestion && (
+                <div
+                  id="ai-category-suggestion-pill"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginTop: '0.4rem',
+                    background: 'rgba(168, 85, 247, 0.15)',
+                    border: '1px solid rgba(168, 85, 247, 0.4)',
+                    padding: '0.35rem 0.6rem',
+                    borderRadius: '6px',
+                    fontSize: '0.75rem',
+                    color: '#e9d5ff',
+                  }}
+                >
+                  <span>
+                    🤖 AI Photo Suggestion: <strong>{aiCategorySuggestion.replace('_', ' ')}</strong> ({((aiConfidence || 0) * 100).toFixed(0)}%)
+                  </span>
+                  <button
+                    type="button"
+                    id="apply-ai-category-btn"
+                    onClick={() => setCategory(aiCategorySuggestion)}
+                    style={{
+                      background: '#9333ea',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Apply
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="form-group">
@@ -216,7 +294,28 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               placeholder="Describe what happened, water depth, number of persons affected, road obstructions, etc."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onBlur={handleDescriptionBlur}
             />
+            {duplicateAlert && (
+              <div
+                id="duplicate-report-alert-banner"
+                style={{
+                  marginTop: '0.45rem',
+                  background: 'rgba(245, 158, 11, 0.15)',
+                  border: '1px solid rgba(245, 158, 11, 0.4)',
+                  padding: '0.45rem 0.75rem',
+                  borderRadius: '6px',
+                  color: '#fbbf24',
+                  fontSize: '0.78rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                }}
+              >
+                <span>⚠️</span>
+                <span>{duplicateAlert}</span>
+              </div>
+            )}
           </div>
 
           {/* Location Coordinates & Address */}

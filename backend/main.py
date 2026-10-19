@@ -54,11 +54,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from routers import incidents_router, responders_router
+from routers import incidents_router, responders_router, ai_router
 
 # --- Include API Routers ---
 app.include_router(incidents_router)
 app.include_router(responders_router)
+app.include_router(ai_router)
+
 
 
 # --- Mount static files for uploaded images ---

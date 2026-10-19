@@ -75,6 +75,7 @@ class IncidentCreate(BaseModel):
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
     address: str = Field(default="")
+    image_path: Optional[str] = None
     source: str = Field(default="citizen")
     reporter_name: str = Field(default="Anonymous")
     reporter_contact: Optional[str] = None

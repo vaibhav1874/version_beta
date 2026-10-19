@@ -33,6 +33,9 @@ from models.incident import (
     VALID_STATUSES,
 )
 from models.responder import IncidentTimeline
+from services.priority_engine import assess_incident_priority
+from services.duplicate_detector import check_for_duplicates
+from services.image_classifier import classify_incident_image
 
 router = APIRouter(prefix="/api/incidents", tags=["Incidents"])
 
@@ -60,6 +63,33 @@ def create_incident(
             detail=f"Invalid severity '{payload.severity}'. Valid severities are: {VALID_SEVERITIES}",
         )
 
+    # 1. Explainable Priority Rules Assessment
+    has_img = bool(payload.image_path)
+    priority_score, priority_expl = assess_incident_priority(
+        category=payload.category,
+        description=payload.description,
+        reported_severity=payload.reported_severity if hasattr(payload, 'reported_severity') else payload.severity,
+        has_image=has_img,
+        is_verified=False,
+    )
+
+    # 2. Duplicate Detection across recent reports
+    dup_id, dup_score = check_for_duplicates(
+        db=db,
+        title=payload.title,
+        description=payload.description,
+        latitude=payload.latitude,
+        longitude=payload.longitude,
+        category=payload.category,
+    )
+
+    # 3. Optional image classification if photo attached
+    ai_cat = None
+    ai_conf = None
+    if payload.image_path:
+        local_path = settings.UPLOAD_DIR + "/" + Path(payload.image_path).name
+        ai_cat, ai_conf = classify_incident_image(local_path)
+
     incident = Incident(
         title=payload.title,
         description=payload.description,
@@ -68,11 +98,19 @@ def create_incident(
         latitude=payload.latitude,
         longitude=payload.longitude,
         address=payload.address,
+        image_path=payload.image_path,
         source=payload.source,
         reporter_name=payload.reporter_name,
         reporter_contact=payload.reporter_contact,
         status="reported",
         is_verified=False,
+        # AI Suggestions (non-authoritative)
+        ai_priority_score=priority_score,
+        ai_priority_explanation=priority_expl,
+        ai_duplicate_of_id=dup_id,
+        ai_duplicate_score=dup_score,
+        ai_category_suggestion=ai_cat,
+        ai_category_confidence=ai_conf,
     )
     db.add(incident)
     db.commit()
@@ -82,7 +120,7 @@ def create_incident(
     timeline_entry = IncidentTimeline(
         incident_id=incident.id,
         event_type="created",
-        description=f"Incident reported via {payload.source} by {payload.reporter_name}",
+        description=f"Incident reported via {payload.source} by {payload.reporter_name}. AI Priority: {priority_score}/10",
         created_by="system",
     )
     db.add(timeline_entry)

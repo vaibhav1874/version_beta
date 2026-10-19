@@ -111,8 +111,55 @@ export const api = {
     return data;
   },
 
+  // AI Intelligence Services
+  classifyImage: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await apiClient.post<{
+      suggested_category: string | null;
+      confidence: number | null;
+      is_confident: boolean;
+      disclaimer: string;
+    }>('/ai/classify-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
+
+  checkDuplicates: async (params: {
+    title: string;
+    description: string;
+    latitude: number;
+    longitude: number;
+    category: string;
+  }) => {
+    const { data } = await apiClient.post<{
+      is_duplicate: boolean;
+      duplicate_of_id: number | null;
+      similarity_score: number | null;
+      message: string;
+    }>('/ai/check-duplicates', params);
+    return data;
+  },
+
+  assessPriority: async (params: {
+    category: string;
+    description: string;
+    reported_severity?: string;
+    has_image?: boolean;
+    is_verified?: boolean;
+  }) => {
+    const { data } = await apiClient.post<{
+      priority_score: number;
+      severity: string;
+      explanation: string;
+    }>('/ai/assess-priority', params);
+    return data;
+  },
+
   checkHealth: async () => {
     const { data } = await apiClient.get('/health');
     return data;
   },
 };
+

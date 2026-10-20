@@ -368,9 +368,9 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                 onClick={() => handleGeocode()}
                 disabled={isGeocoding || !address.trim()}
                 style={{
-                  background: 'rgba(0, 240, 255, 0.1)',
-                  border: '1px solid rgba(0, 240, 255, 0.4)',
-                  color: '#00f0ff',
+                  background: 'rgba(245, 159, 10, 0.12)',
+                  border: '1px solid rgba(245, 159, 10, 0.4)',
+                  color: '#f59f0a',
                   fontSize: '0.75rem',
                   padding: '2px 8px',
                   borderRadius: '4px',

@@ -14,64 +14,57 @@ interface MapDashboardProps {
   onSelectIncident: (incident: Incident) => void;
 }
 
-// Category palette configuration matching DataV reference
-const CATEGORY_THEMES: Record<HazardCategory, { color: string; glow: string; label: string; icon: string }> = {
+// Clean category palette matching operational palette
+const CATEGORY_THEMES: Record<HazardCategory, { color: string; label: string; icon: string }> = {
   flood: {
-    color: '#00f0ff',
-    glow: 'rgba(0, 240, 255, 0.7)',
+    color: '#38bdf8',
     label: 'FLOOD',
     icon: '🌊',
   },
   fire: {
-    color: '#ff3344',
-    glow: 'rgba(255, 51, 68, 0.8)',
+    color: '#ef4444',
     label: 'FIRE',
     icon: '🔥',
   },
   severe_weather: {
-    color: '#ffaa00',
-    glow: 'rgba(255, 170, 0, 0.75)',
+    color: '#f59f0a',
     label: 'STORM',
     icon: '🌪️',
   },
   road_accident: {
-    color: '#ec4899',
-    glow: 'rgba(236, 72, 153, 0.75)',
+    color: '#fb923c',
     label: 'CRASH',
     icon: '🚗',
   },
 };
 
-// Create futuristic DataV radar cyber marker
+// Create clean, matte tactical marker without neon glow
 const createCyberMarker = (incident: Incident, isSelected: boolean) => {
   const theme = CATEGORY_THEMES[incident.category] || {
-    color: '#00f0ff',
-    glow: 'rgba(0, 240, 255, 0.7)',
+    color: '#f59f0a',
     label: 'EVENT',
     icon: '⚠️',
   };
 
   const riskScore = incident.ai_priority_score || (incident.severity === 'critical' ? 9 : incident.severity === 'high' ? 7 : 5);
-  const size = isSelected ? 46 : 38;
+  const size = isSelected ? 42 : 36;
 
   return L.divIcon({
     className: 'cyber-leaflet-marker-wrapper',
     html: `
-      <div class="cyber-marker-container ${isSelected ? 'is-selected' : ''}" style="--theme-color: ${theme.color}; --theme-glow: ${theme.glow};">
-        <div class="cyber-pulse-ring"></div>
-        <div class="cyber-pulse-ring-outer"></div>
+      <div class="cyber-marker-container ${isSelected ? 'is-selected' : ''}" style="--theme-color: ${theme.color};">
         <div class="cyber-core-badge" style="width: ${size}px; height: ${size}px;">
           <span class="cyber-icon">${theme.icon}</span>
           <span class="cyber-risk-badge">${riskScore}</span>
         </div>
         <div class="cyber-marker-label">
-          <span>[${theme.label}]</span>
+          <span>${theme.label}</span>
         </div>
       </div>
     `,
-    iconSize: [size, size + 20],
+    iconSize: [size, size + 16],
     iconAnchor: [size / 2, size / 2],
-    popupAnchor: [0, -size / 2 - 10],
+    popupAnchor: [0, -size / 2 - 8],
   });
 };
 
@@ -105,7 +98,7 @@ export const MapDashboard: React.FC<MapDashboardProps> = ({
       <div className="map-hud-overlay">
         <div className="map-hud-corner corner-tl">
           <span className="hud-label">GEO-GRID: {activeLat.toFixed(4)}° N / {activeLon.toFixed(4)}° E</span>
-          <span className="hud-sub">TACTICAL RADAR: ACTIVE</span>
+          <span className="hud-sub">COORDINATE MONITORING</span>
         </div>
         <div className="map-hud-corner corner-tr">
           <span className="hud-metric-pill">

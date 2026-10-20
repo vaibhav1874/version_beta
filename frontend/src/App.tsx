@@ -117,13 +117,13 @@ export const App: React.FC = () => {
           <div className="brand-text">
             <h1>Project JEEVAN</h1>
             <span className="brand-tagline">
-              Civil Defense & Emergency AI Matrix
+              Emergency Operations & Response Platform
             </span>
           </div>
         </div>
 
         {/* View Switcher Tabs (Portal vs Command Center) */}
-        <div className="nav-view-switcher" style={{ display: 'flex', gap: '0.4rem', background: 'rgba(0, 240, 255, 0.05)', padding: '4px', borderRadius: '8px', border: '1px solid rgba(0, 240, 255, 0.2)' }}>
+        <div className="nav-view-switcher" style={{ display: 'flex', gap: '0.35rem', background: '#14161c', padding: '4px', borderRadius: '6px', border: '1px solid #282c38' }}>
           <button
             id="nav-tab-landing-portal"
             className={`nav-btn ${activeView === 'portal' ? 'active' : ''}`}
@@ -132,17 +132,16 @@ export const App: React.FC = () => {
               padding: '0.4rem 0.9rem',
               fontSize: '0.78rem',
               fontWeight: 700,
-              letterSpacing: '0.06em',
-              background: activeView === 'portal' ? 'rgba(0, 240, 255, 0.25)' : 'transparent',
-              color: activeView === 'portal' ? '#00f0ff' : '#94a3b8',
-              border: activeView === 'portal' ? '1px solid #00f0ff' : 'none',
-              boxShadow: activeView === 'portal' ? '0 0 10px rgba(0, 240, 255, 0.3)' : 'none',
-              borderRadius: '6px',
+              letterSpacing: '0.04em',
+              background: activeView === 'portal' ? 'rgba(245, 159, 10, 0.15)' : 'transparent',
+              color: activeView === 'portal' ? '#f59f0a' : '#94a3b8',
+              border: activeView === 'portal' ? '1px solid rgba(245, 159, 10, 0.4)' : '1px solid transparent',
+              borderRadius: '4px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
           >
-            🌐 MISSION PORTAL
+            🌐 OVERVIEW PORTAL
           </button>
           <button
             id="nav-tab-command-matrix"
@@ -152,37 +151,38 @@ export const App: React.FC = () => {
               padding: '0.4rem 0.9rem',
               fontSize: '0.78rem',
               fontWeight: 700,
-              letterSpacing: '0.06em',
-              background: activeView === 'command' ? 'rgba(0, 240, 255, 0.25)' : 'transparent',
-              color: activeView === 'command' ? '#00f0ff' : '#94a3b8',
-              border: activeView === 'command' ? '1px solid #00f0ff' : 'none',
-              boxShadow: activeView === 'command' ? '0 0 10px rgba(0, 240, 255, 0.3)' : 'none',
-              borderRadius: '6px',
+              letterSpacing: '0.04em',
+              background: activeView === 'command' ? 'rgba(245, 159, 10, 0.15)' : 'transparent',
+              color: activeView === 'command' ? '#f59f0a' : '#94a3b8',
+              border: activeView === 'command' ? '1px solid rgba(245, 159, 10, 0.4)' : '1px solid transparent',
+              borderRadius: '4px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
           >
-            ⚡ COMMAND MATRIX
+            ⚡ DISPATCH COMMAND
           </button>
         </div>
 
         <div className="nav-links">
           <div className="system-pill" id="system-status-indicator">
             <span className="live-dot" />
-            <span>{systemOnline ? 'AI Telemetry Synced' : 'Reconnecting...'}</span>
+            <span>{systemOnline ? 'Telemetry Operational' : 'Reconnecting...'}</span>
           </div>
 
           <button
             id="seed-simulation-demo-btn"
             className="nav-btn"
             style={{
-              border: '1px solid rgba(168, 85, 247, 0.4)',
-              background: 'rgba(168, 85, 247, 0.1)',
-              color: '#d8b4fe',
+              border: '1px solid #2e3442',
+              background: '#1f232d',
+              color: '#cbd5e1',
+              padding: '0.4rem 0.8rem',
+              fontSize: '0.78rem',
             }}
             onClick={handleSeedSimulation}
             disabled={isSeeding}
-            title="Load realistic multi-hazard demo simulation data"
+            title="Load emergency demo simulation data"
           >
             <span>⚡</span>
             <span>{isSeeding ? 'Injecting...' : 'Demo Scenario'}</span>
@@ -419,17 +419,13 @@ export const App: React.FC = () => {
                             {Array.from({ length: 10 }).map((_, idx) => {
                               const isActive = idx < riskScore;
                               let segmentColor = 'rgba(255, 255, 255, 0.08)';
-                              let segmentGlow = 'none';
                               if (isActive) {
                                 if (idx >= 7) {
-                                  segmentColor = '#ff2a5f';
-                                  segmentGlow = '0 0 6px #ff2a5f';
+                                  segmentColor = '#ef4444';
                                 } else if (idx >= 4) {
-                                  segmentColor = '#f59e0b';
-                                  segmentGlow = '0 0 6px #f59e0b';
+                                  segmentColor = '#f59f0a';
                                 } else {
-                                  segmentColor = '#00f0ff';
-                                  segmentGlow = '0 0 6px #00f0ff';
+                                  segmentColor = '#3b82f6';
                                 }
                               }
                               return (
@@ -439,8 +435,7 @@ export const App: React.FC = () => {
                                     flex: 1,
                                     borderRadius: '2px',
                                     background: segmentColor,
-                                    boxShadow: segmentGlow,
-                                    transition: 'all 0.3s ease',
+                                    transition: 'all 0.2s ease',
                                   }}
                                 />
                               );

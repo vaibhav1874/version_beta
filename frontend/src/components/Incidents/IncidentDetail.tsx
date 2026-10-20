@@ -207,9 +207,9 @@ export const IncidentDetail: React.FC<IncidentDetailProps> = ({
             type="button"
             onClick={() => setIsRelocating(!isRelocating)}
             style={{
-              background: 'rgba(0, 240, 255, 0.1)',
-              border: '1px solid rgba(0, 240, 255, 0.3)',
-              color: '#00f0ff',
+              background: 'rgba(245, 159, 10, 0.15)',
+              border: '1px solid rgba(245, 159, 10, 0.4)',
+              color: '#f59f0a',
               padding: '2px 6px',
               borderRadius: '4px',
               fontSize: '0.7rem',
@@ -228,8 +228,8 @@ export const IncidentDetail: React.FC<IncidentDetailProps> = ({
             style={{
               marginTop: '0.6rem',
               padding: '0.6rem',
-              background: 'rgba(0, 0, 0, 0.4)',
-              border: '1px solid rgba(0, 240, 255, 0.3)',
+              background: '#14161c',
+              border: '1px solid #2e3442',
               borderRadius: '6px',
             }}
           >
@@ -298,11 +298,11 @@ export const IncidentDetail: React.FC<IncidentDetailProps> = ({
               disabled={isUpdating}
               style={{
                 width: '100%',
-                background: '#00f0ff',
-                color: '#000',
+                background: '#f59f0a',
+                color: '#14161c',
                 fontWeight: 700,
                 border: 'none',
-                padding: '5px',
+                padding: '6px',
                 borderRadius: '4px',
                 fontSize: '0.75rem',
                 cursor: isUpdating ? 'not-allowed' : 'pointer',
@@ -401,11 +401,10 @@ export const IncidentDetail: React.FC<IncidentDetailProps> = ({
                   const score = incident.ai_priority_score || (incident.severity === 'critical' ? 9 : incident.severity === 'high' ? 7 : 5);
                   const isActive = idx < score;
                   let color = 'rgba(255, 255, 255, 0.08)';
-                  let glow = 'none';
                   if (isActive) {
-                    if (idx >= 7) { color = '#ff2a5f'; glow = '0 0 6px #ff2a5f'; }
-                    else if (idx >= 4) { color = '#f59e0b'; glow = '0 0 6px #f59e0b'; }
-                    else { color = '#00f0ff'; glow = '0 0 6px #00f0ff'; }
+                    if (idx >= 7) { color = '#ef4444'; }
+                    else if (idx >= 4) { color = '#f59f0a'; }
+                    else { color = '#3b82f6'; }
                   }
                   return (
                     <div
@@ -414,7 +413,7 @@ export const IncidentDetail: React.FC<IncidentDetailProps> = ({
                         flex: 1,
                         borderRadius: '2px',
                         background: color,
-                        boxShadow: glow,
+                        transition: 'all 0.2s ease',
                       }}
                     />
                   );

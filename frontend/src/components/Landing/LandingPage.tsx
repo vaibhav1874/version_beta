@@ -31,21 +31,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   return (
     <div className="landing-container" id="jeevan-landing-portal">
-      {/* Background Cyber Grid Lines & Radar Gradients */}
-      <div className="cyber-grid-background"></div>
-      <div className="radar-sweep-effect"></div>
-
       {/* Hero Section */}
       <section className="landing-hero-section">
         <div className="hero-bracket-top">
-          <span className="bracket-tag">// PROTOCOL: JEEVAN-CIVIL-SHIELD</span>
-          <span className="bracket-tag">SYSTEM CLASSIFICATION: MULTI-HAZARD AI MATRIX</span>
+          <span className="bracket-tag">CIVIL DEFENSE OPERATIONS</span>
+          <span className="bracket-tag">MULTI-HAZARD EMERGENCY COORDINATION</span>
         </div>
 
         <div className="hero-content">
           <div className="hero-badge-pill">
             <span className="hero-radar-dot"></span>
-            NEXT-GEN EMERGENCY INTELLIGENCE & CRISIS COORDINATION
+            OPERATIONAL CIVIL DEFENSE & CRISIS COORDINATION
           </div>
 
           <h1 className="hero-glitch-title">
@@ -53,7 +49,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </h1>
 
           <p className="hero-subtitle">
-            Autonomous Multi-Hazard Telemetry, Spatial Duplicate Elimination, and Explainable AI Threat Indices for Instant Crisis Mobilization.
+            Autonomous multi-hazard telemetry, spatial duplicate detection, and transparent priority scoring for rapid crisis mobilization.
           </p>
 
           <div className="hero-cta-group">
@@ -62,9 +58,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               className="cyber-btn-primary"
               onClick={onOpenCommandCenter}
             >
-              <span className="btn-glitch-border"></span>
               <span className="btn-icon">⚡</span>
-              <span>ENTER TACTICAL COMMAND CENTER</span>
+              <span>OPEN COMMAND CENTER</span>
             </button>
 
             <button
@@ -73,7 +68,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               onClick={onOpenReportModal}
             >
               <span className="btn-icon">🚨</span>
-              <span>TRANSMIT FIELD REPORT</span>
+              <span>REPORT INCIDENT</span>
             </button>
 
             <button
@@ -82,7 +77,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               onClick={onSeedDemo}
               disabled={isSeeding}
             >
-              <span>{isSeeding ? 'INITIALIZING MATRIX...' : 'LOAD DEMO SCENARIO'}</span>
+              <span>{isSeeding ? 'INJECTING SIMULATION...' : 'LOAD DEMO SCENARIO'}</span>
             </button>
           </div>
         </div>
@@ -142,9 +137,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* Four Hazard Threat Pillars */}
       <section className="landing-pillars-section">
         <div className="section-hud-title">
-          <span className="title-code">// ARCHITECTURE 01</span>
-          <h2>SUPPORTED EMERGENCY VECTORS</h2>
-          <p>Domain-adapted intelligence engines tuned specifically for urban critical hazards without generic black-box assumptions.</p>
+          <span className="title-code">OPERATIONAL DOMAINS</span>
+          <h2>SUPPORTED EMERGENCY CATEGORIES</h2>
+          <p>Domain-adapted triage logic tuned specifically for urban critical hazards with explainable scoring.</p>
         </div>
 
         <div className="hazard-pillars-grid">
@@ -209,7 +204,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* AI Principles & Explainability */}
       <section className="landing-ai-section">
         <div className="section-hud-title">
-          <span className="title-code">// ENGINE 02</span>
+          <span className="title-code">DECISION SUPPORT ARCHITECTURE</span>
           <h2>TRANSPARENT, EXPLAINABLE INTELLIGENCE</h2>
           <p>Why Project JEEVAN eliminates opaque black-boxes in favor of dispatcher-verifiable decision support.</p>
         </div>
@@ -239,7 +234,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <footer className="landing-footer">
         <div className="footer-left">
           <span className="brand-dot"></span>
-          <span>PROJECT JEEVAN — CIVIL EMERGENCY INTELLIGENCE MATRIX</span>
+          <span>PROJECT JEEVAN — EMERGENCY OPERATIONS & CIVIL DEFENSE PLATFORM</span>
         </div>
         <div className="footer-right">
           <span>AI outputs are preliminary decision aids. Human dispatch verification required.</span>

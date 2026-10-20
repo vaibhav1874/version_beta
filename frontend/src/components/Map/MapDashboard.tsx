@@ -96,12 +96,15 @@ export const MapDashboard: React.FC<MapDashboardProps> = ({
     ? [incidents[0].latitude, incidents[0].longitude]
     : [28.6139, 77.2090];
 
+  const activeLat = selectedIncident ? selectedIncident.latitude : (incidents.length > 0 ? incidents[0].latitude : 28.6139);
+  const activeLon = selectedIncident ? selectedIncident.longitude : (incidents.length > 0 ? incidents[0].longitude : 77.2090);
+
   return (
     <div className="map-pane datav-map-wrapper" id="incident-map-container">
       {/* Sci-Fi HUD Crosshairs & Telemetry Overlay */}
       <div className="map-hud-overlay">
         <div className="map-hud-corner corner-tl">
-          <span className="hud-label">GEO-GRID: 28.6139° N / 77.2090° E</span>
+          <span className="hud-label">GEO-GRID: {activeLat.toFixed(4)}° N / {activeLon.toFixed(4)}° E</span>
           <span className="hud-sub">TACTICAL RADAR: ACTIVE</span>
         </div>
         <div className="map-hud-corner corner-tr">

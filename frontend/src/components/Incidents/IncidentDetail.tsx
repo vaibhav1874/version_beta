@@ -12,6 +12,7 @@ import type {
   Assignment,
   TimelineEvent,
 } from '../../types/incident';
+import { geocodeAddress } from '../../utils/geocoding';
 
 interface IncidentDetailProps {
   incident: Incident;
@@ -31,6 +32,65 @@ export const IncidentDetail: React.FC<IncidentDetailProps> = ({
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeTab, setActiveTab] = useState<'info' | 'coordination' | 'timeline'>('info');
+
+  // Relocation state
+  const [isRelocating, setIsRelocating] = useState(false);
+  const [editLat, setEditLat] = useState(incident.latitude.toString());
+  const [editLon, setEditLon] = useState(incident.longitude.toString());
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [relocateMsg, setRelocateMsg] = useState<string | null>(null);
+
+  // Sync edit coordinates when incident changes
+  useEffect(() => {
+    setEditLat(incident.latitude.toString());
+    setEditLon(incident.longitude.toString());
+    setIsRelocating(false);
+    setRelocateMsg(null);
+  }, [incident.id, incident.latitude, incident.longitude]);
+
+  const handleAutoGeocodeAddress = async () => {
+    if (!incident.address) return;
+    setIsGeocoding(true);
+    setRelocateMsg(null);
+    try {
+      const res = await geocodeAddress(incident.address);
+      if (res) {
+        setEditLat(res.latitude.toFixed(6));
+        setEditLon(res.longitude.toFixed(6));
+        setRelocateMsg(`Resolved: ${res.displayName}`);
+      } else {
+        setRelocateMsg('No coordinates found for this address. Enter manually.');
+      }
+    } catch (err) {
+      console.warn('Geocoding error', err);
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
+  const handleSaveLocation = async () => {
+    const newLat = parseFloat(editLat);
+    const newLon = parseFloat(editLon);
+    if (isNaN(newLat) || isNaN(newLon)) {
+      setRelocateMsg('Please enter valid numeric coordinates.');
+      return;
+    }
+    setIsUpdating(true);
+    try {
+      const updated = await api.updateIncident(incident.id, {
+        latitude: newLat,
+        longitude: newLon,
+      });
+      onIncidentUpdated(updated);
+      setIsRelocating(false);
+      setRelocateMsg('Location successfully updated!');
+    } catch (err: any) {
+      console.error('Failed to update location', err);
+      setRelocateMsg('Failed to update location on server.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   // Load responder teams, assignments, and timeline
   useEffect(() => {
@@ -140,7 +200,118 @@ export const IncidentDetail: React.FC<IncidentDetailProps> = ({
       </h3>
 
       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
-        📍 {incident.address || `${incident.latitude}, ${incident.longitude}`}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+          <div>📍 {incident.address || `${incident.latitude}, ${incident.longitude}`}</div>
+          <button
+            id="relocate-incident-toggle-btn"
+            type="button"
+            onClick={() => setIsRelocating(!isRelocating)}
+            style={{
+              background: 'rgba(0, 240, 255, 0.1)',
+              border: '1px solid rgba(0, 240, 255, 0.3)',
+              color: '#00f0ff',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontSize: '0.7rem',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              fontWeight: 600,
+            }}
+          >
+            {isRelocating ? 'Cancel' : '📍 Relocate GPS'}
+          </button>
+        </div>
+
+        {isRelocating && (
+          <div
+            id="relocate-gps-panel"
+            style={{
+              marginTop: '0.6rem',
+              padding: '0.6rem',
+              background: 'rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(0, 240, 255, 0.3)',
+              borderRadius: '6px',
+            }}
+          >
+            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.5rem' }}>
+              <button
+                type="button"
+                id="auto-geocode-detail-btn"
+                onClick={handleAutoGeocodeAddress}
+                disabled={isGeocoding || !incident.address}
+                style={{
+                  flex: 1,
+                  background: 'rgba(16, 185, 129, 0.2)',
+                  border: '1px solid rgba(16, 185, 129, 0.5)',
+                  color: '#34d399',
+                  padding: '4px 6px',
+                  borderRadius: '4px',
+                  fontSize: '0.72rem',
+                  cursor: isGeocoding || !incident.address ? 'not-allowed' : 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                {isGeocoding ? '🛰️ Resolving...' : '🔍 Auto-Locate from Address'}
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.5rem' }}>
+              <input
+                type="text"
+                placeholder="Latitude"
+                value={editLat}
+                onChange={(e) => setEditLat(e.target.value)}
+                style={{
+                  flex: 1,
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: '#fff',
+                  padding: '4px 6px',
+                  borderRadius: '4px',
+                  fontSize: '0.75rem',
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Longitude"
+                value={editLon}
+                onChange={(e) => setEditLon(e.target.value)}
+                style={{
+                  flex: 1,
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: '#fff',
+                  padding: '4px 6px',
+                  borderRadius: '4px',
+                  fontSize: '0.75rem',
+                }}
+              />
+            </div>
+            {relocateMsg && (
+              <div style={{ fontSize: '0.7rem', color: '#38bdf8', marginBottom: '0.4rem' }}>
+                {relocateMsg}
+              </div>
+            )}
+            <button
+              type="button"
+              id="save-new-coords-btn"
+              onClick={handleSaveLocation}
+              disabled={isUpdating}
+              style={{
+                width: '100%',
+                background: '#00f0ff',
+                color: '#000',
+                fontWeight: 700,
+                border: 'none',
+                padding: '5px',
+                borderRadius: '4px',
+                fontSize: '0.75rem',
+                cursor: isUpdating ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {isUpdating ? 'Updating Coordinates...' : 'Save & Move Map Marker'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Image if available */}

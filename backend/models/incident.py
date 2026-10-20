@@ -89,6 +89,8 @@ class IncidentUpdate(BaseModel):
     severity: Optional[str] = None
     status: Optional[str] = None
     address: Optional[str] = None
+    latitude: Optional[float] = Field(None, ge=-90, le=90)
+    longitude: Optional[float] = Field(None, ge=-180, le=180)
     is_verified: Optional[bool] = None
     ai_category_suggestion: Optional[str] = None
     ai_category_confidence: Optional[float] = None

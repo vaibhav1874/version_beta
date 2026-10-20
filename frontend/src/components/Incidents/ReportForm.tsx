@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { api } from '../../api/client';
 import type { HazardCategory, SeverityLevel, Incident } from '../../types/incident';
+import { geocodeAddress } from '../../utils/geocoding';
 
 interface ReportFormProps {
   isOpen: boolean;
@@ -22,9 +23,11 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<HazardCategory>('flood');
   const [severity, setSeverity] = useState<SeverityLevel>('medium');
-  const [latitude, setLatitude] = useState('28.6139');
-  const [longitude, setLongitude] = useState('77.2090');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
   const [address, setAddress] = useState('');
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodedLabel, setGeocodedLabel] = useState<string | null>(null);
   const [reporterName, setReporterName] = useState('');
   const [reporterContact, setReporterContact] = useState('');
   
@@ -92,6 +95,28 @@ export const ReportForm: React.FC<ReportFormProps> = ({
     }
   };
 
+  // Auto Geocode from address
+  const handleGeocode = async (overrideAddress?: string) => {
+    const query = (overrideAddress !== undefined ? overrideAddress : address).trim();
+    if (!query || query.length < 3) return;
+    setIsGeocoding(true);
+    try {
+      const res = await geocodeAddress(query);
+      if (res) {
+        setLatitude(res.latitude.toFixed(6));
+        setLongitude(res.longitude.toFixed(6));
+        setGeocodedLabel(res.displayName);
+        setErrorMsg(null);
+      } else {
+        setGeocodedLabel(null);
+      }
+    } catch (err) {
+      console.warn('Geocoding error', err);
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
   // Browser Geolocation
   const handleGetLocation = () => {
     if ('geolocation' in navigator) {
@@ -99,6 +124,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         (pos) => {
           setLatitude(pos.coords.latitude.toFixed(6));
           setLongitude(pos.coords.longitude.toFixed(6));
+          setGeocodedLabel('Device GPS Location Locked');
         },
         (err) => {
           setErrorMsg(`Unable to get location: ${err.message}`);
@@ -113,12 +139,26 @@ export const ReportForm: React.FC<ReportFormProps> = ({
     e.preventDefault();
     setErrorMsg(null);
 
-    const latNum = parseFloat(latitude);
-    const lonNum = parseFloat(longitude);
+    let latNum = parseFloat(latitude);
+    let lonNum = parseFloat(longitude);
 
+    // If coordinates are missing or still blank, automatically attempt geocoding the address
+    if ((isNaN(latNum) || isNaN(lonNum)) && address.trim().length >= 3) {
+      setIsGeocoding(true);
+      const geoResult = await geocodeAddress(address.trim());
+      setIsGeocoding(false);
+      if (geoResult) {
+        latNum = geoResult.latitude;
+        lonNum = geoResult.longitude;
+        setLatitude(latNum.toFixed(6));
+        setLongitude(lonNum.toFixed(6));
+      }
+    }
+
+    // Default to center if still empty
     if (isNaN(latNum) || isNaN(lonNum)) {
-      setErrorMsg('Please enter valid numeric latitude and longitude coordinates.');
-      return;
+      latNum = 28.6139;
+      lonNum = 77.2090;
     }
 
     if (description.trim().length < 10) {
@@ -316,11 +356,69 @@ export const ReportForm: React.FC<ReportFormProps> = ({
             )}
           </div>
 
-          {/* Location Coordinates & Address */}
+          {/* Landmark / Address with Auto-Geocode */}
+          <div className="form-group">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+              <label className="form-label" htmlFor="incident-address-input" style={{ margin: 0 }}>
+                Landmark / Street Address / Town *
+              </label>
+              <button
+                type="button"
+                id="auto-geocode-address-btn"
+                onClick={() => handleGeocode()}
+                disabled={isGeocoding || !address.trim()}
+                style={{
+                  background: 'rgba(0, 240, 255, 0.1)',
+                  border: '1px solid rgba(0, 240, 255, 0.4)',
+                  color: '#00f0ff',
+                  fontSize: '0.75rem',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  cursor: isGeocoding || !address.trim() ? 'not-allowed' : 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                {isGeocoding ? '🛰️ Locating...' : '🔍 Find GPS Coordinates'}
+              </button>
+            </div>
+            <input
+              id="incident-address-input"
+              className="form-input"
+              type="text"
+              placeholder="e.g. Village Karanwas, near Biaora tehsil, Rajgarh MP"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              onBlur={() => handleGeocode()}
+            />
+            {geocodedLabel && (
+              <div
+                id="geocode-match-badge"
+                style={{
+                  marginTop: '0.35rem',
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
+                  color: '#34d399',
+                  padding: '0.3rem 0.6rem',
+                  borderRadius: '5px',
+                  fontSize: '0.74rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                }}
+              >
+                <span>📍</span>
+                <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                  GPS Locked: {geocodedLabel}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Location Coordinates */}
           <div className="form-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
               <label className="form-label" style={{ margin: 0 }}>
-                Location Coordinates *
+                GPS Coordinates (Auto-populated from address or GPS)
               </label>
               <button
                 type="button"
@@ -343,35 +441,19 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                 id="incident-latitude-input"
                 className="form-input"
                 type="text"
-                placeholder="Latitude (e.g. 28.6139)"
+                placeholder="Latitude (e.g. 23.9167)"
                 value={latitude}
                 onChange={(e) => setLatitude(e.target.value)}
-                required
               />
               <input
                 id="incident-longitude-input"
                 className="form-input"
                 type="text"
-                placeholder="Longitude (e.g. 77.2090)"
+                placeholder="Longitude (e.g. 76.9167)"
                 value={longitude}
                 onChange={(e) => setLongitude(e.target.value)}
-                required
               />
             </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="incident-address-input">
-              Landmark / Street Address
-            </label>
-            <input
-              id="incident-address-input"
-              className="form-input"
-              type="text"
-              placeholder="e.g. Outer Ring Road near Moti Bagh Flyover"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
           </div>
 
           {/* Image Upload Evidence */}

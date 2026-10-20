@@ -1,6 +1,6 @@
 /**
- * Project JEEVAN — Leaflet Map Dashboard
- * Interactive multi-hazard emergency map with custom categorized markers.
+ * Project JEEVAN — Sci-Fi / DataV Tactical Cartography Hub
+ * High-contrast dark cyber mapping with glowing pulse rings, threat markers, and radar scanlines.
  */
 
 import React, { useEffect } from 'react';
@@ -14,50 +14,73 @@ interface MapDashboardProps {
   onSelectIncident: (incident: Incident) => void;
 }
 
-// Helper to create category-specific styled DivIcon
-const createCustomMarker = (category: HazardCategory, isSelected: boolean) => {
-  const iconEmoji: Record<HazardCategory, string> = {
-    flood: '🌊',
-    fire: '🔥',
-    severe_weather: '🌪️',
-    road_accident: '🚗',
+// Category palette configuration matching DataV reference
+const CATEGORY_THEMES: Record<HazardCategory, { color: string; glow: string; label: string; icon: string }> = {
+  flood: {
+    color: '#00f0ff',
+    glow: 'rgba(0, 240, 255, 0.7)',
+    label: 'FLOOD',
+    icon: '🌊',
+  },
+  fire: {
+    color: '#ff3344',
+    glow: 'rgba(255, 51, 68, 0.8)',
+    label: 'FIRE',
+    icon: '🔥',
+  },
+  severe_weather: {
+    color: '#ffaa00',
+    glow: 'rgba(255, 170, 0, 0.75)',
+    label: 'STORM',
+    icon: '🌪️',
+  },
+  road_accident: {
+    color: '#ec4899',
+    glow: 'rgba(236, 72, 153, 0.75)',
+    label: 'CRASH',
+    icon: '🚗',
+  },
+};
+
+// Create futuristic DataV radar cyber marker
+const createCyberMarker = (incident: Incident, isSelected: boolean) => {
+  const theme = CATEGORY_THEMES[incident.category] || {
+    color: '#00f0ff',
+    glow: 'rgba(0, 240, 255, 0.7)',
+    label: 'EVENT',
+    icon: '⚠️',
   };
 
-  const emoji = iconEmoji[category] || '⚠️';
-  const size = isSelected ? 42 : 32;
+  const riskScore = incident.ai_priority_score || (incident.severity === 'critical' ? 9 : incident.severity === 'high' ? 7 : 5);
+  const size = isSelected ? 46 : 38;
 
   return L.divIcon({
-    className: 'custom-leaflet-marker',
+    className: 'cyber-leaflet-marker-wrapper',
     html: `
-      <div style="
-        width: ${size}px;
-        height: ${size}px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: ${isSelected ? '22px' : '16px'};
-        border-radius: 50%;
-        background: ${isSelected ? 'rgba(56, 189, 248, 0.9)' : 'rgba(15, 23, 42, 0.85)'};
-        border: 2px solid ${isSelected ? '#38bdf8' : '#ffffff'};
-        box-shadow: 0 0 ${isSelected ? '16px rgba(56, 189, 248, 0.8)' : '8px rgba(0,0,0,0.5)'};
-        transition: all 0.25s ease;
-      ">
-        ${emoji}
+      <div class="cyber-marker-container ${isSelected ? 'is-selected' : ''}" style="--theme-color: ${theme.color}; --theme-glow: ${theme.glow};">
+        <div class="cyber-pulse-ring"></div>
+        <div class="cyber-pulse-ring-outer"></div>
+        <div class="cyber-core-badge" style="width: ${size}px; height: ${size}px;">
+          <span class="cyber-icon">${theme.icon}</span>
+          <span class="cyber-risk-badge">${riskScore}</span>
+        </div>
+        <div class="cyber-marker-label">
+          <span>[${theme.label}]</span>
+        </div>
       </div>
     `,
-    iconSize: [size, size],
+    iconSize: [size, size + 20],
     iconAnchor: [size / 2, size / 2],
-    popupAnchor: [0, -size / 2],
+    popupAnchor: [0, -size / 2 - 10],
   });
 };
 
-// Component to smoothly pan the map when an incident is selected
 function MapFlyTo({ selectedIncident }: { selectedIncident: Incident | null }) {
   const map = useMap();
   useEffect(() => {
     if (selectedIncident) {
       map.flyTo([selectedIncident.latitude, selectedIncident.longitude], 14, {
-        duration: 1.2,
+        duration: 1.4,
       });
     }
   }, [selectedIncident, map]);
@@ -69,61 +92,81 @@ export const MapDashboard: React.FC<MapDashboardProps> = ({
   selectedIncident,
   onSelectIncident,
 }) => {
-  // Default center: Delhi NCR (standard urban center) or fallback to first incident
   const defaultCenter: [number, number] = incidents.length > 0
     ? [incidents[0].latitude, incidents[0].longitude]
     : [28.6139, 77.2090];
 
   return (
-    <div className="map-pane" id="incident-map-container">
+    <div className="map-pane datav-map-wrapper" id="incident-map-container">
+      {/* Sci-Fi HUD Crosshairs & Telemetry Overlay */}
+      <div className="map-hud-overlay">
+        <div className="map-hud-corner corner-tl">
+          <span className="hud-label">GEO-GRID: 28.6139° N / 77.2090° E</span>
+          <span className="hud-sub">TACTICAL RADAR: ACTIVE</span>
+        </div>
+        <div className="map-hud-corner corner-tr">
+          <span className="hud-metric-pill">
+            <span className="radar-blip"></span>
+            ACTIVE SECTORS: {incidents.length}
+          </span>
+        </div>
+      </div>
+
       <MapContainer
         center={defaultCenter}
         zoom={12}
         scrollWheelZoom={true}
         style={{ height: '100%', width: '100%' }}
       >
-        {/* OpenStreetMap standard tiles (Free, zero API key) */}
+        {/* OpenStreetMap Tactical Cyber Tiles (100% Free, Zero API Key Watermark) */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
+          className="tactical-dark-tiles"
         />
 
         <MapFlyTo selectedIncident={selectedIncident} />
 
         {incidents.map((incident) => {
           const isSelected = selectedIncident?.id === incident.id;
+          const theme = CATEGORY_THEMES[incident.category] || CATEGORY_THEMES.flood;
+          const risk = incident.ai_priority_score || (incident.severity === 'critical' ? 9 : incident.severity === 'high' ? 7 : 5);
+
           return (
             <Marker
               key={incident.id}
               position={[incident.latitude, incident.longitude]}
-              icon={createCustomMarker(incident.category, isSelected)}
+              icon={createCyberMarker(incident, isSelected)}
               eventHandlers={{
                 click: () => onSelectIncident(incident),
               }}
             >
-              <Popup>
-                <div style={{ color: '#0f172a', minWidth: '180px' }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px' }}>
-                    {incident.title}
+              <Popup className="cyber-popup">
+                <div className="cyber-popup-body">
+                  <div className="cyber-popup-header">
+                    <span className="popup-category" style={{ color: theme.color }}>
+                      {theme.icon} {incident.category.toUpperCase().replace('_', ' ')}
+                    </span>
+                    <span className="popup-risk-tag" style={{ borderColor: theme.color, color: theme.color }}>
+                      RISK {risk}/10
+                    </span>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#475569', marginBottom: '6px' }}>
-                    Category: <strong>{incident.category.replace('_', ' ')}</strong> | Status: <strong>{incident.status}</strong>
+
+                  <h4 className="popup-title">{incident.title}</h4>
+                  <p className="popup-address">📍 {incident.address || `${incident.latitude}, ${incident.longitude}`}</p>
+                  
+                  <div className="popup-status-row">
+                    <span className="popup-provenance-tag">[{incident.source.toUpperCase()}]</span>
+                    <span className={`badge-status status-${incident.status}`}>{incident.status}</span>
                   </div>
+
                   <button
                     id={`popup-view-btn-${incident.id}`}
                     onClick={() => onSelectIncident(incident)}
-                    style={{
-                      background: '#0284c7',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      fontSize: '0.75rem',
-                      cursor: 'pointer',
-                      width: '100%',
-                    }}
+                    className="popup-inspect-btn"
                   >
-                    View Details
+                    INSPECT TELEMETRY & DISPATCH »
                   </button>
                 </div>
               </Popup>

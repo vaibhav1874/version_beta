@@ -109,15 +109,19 @@ def check_for_duplicates(
         cand_text = f"{candidate.title} {candidate.description}"
         sim_score = compute_text_similarity(target_text, cand_text)
 
-        # Distance weighting factor (closer = higher score)
-        dist_factor = max(0.0, 1.0 - (dist_meters / settings.DUPLICATE_DISTANCE_METERS))
-        combined_score = round(0.7 * sim_score + 0.3 * dist_factor, 3)
+        # Require meaningful semantic similarity (sim >= 0.35) so unrelated events at the same GPS are never flagged
+        if sim_score < 0.35:
+            continue
 
-        if combined_score >= threshold and combined_score > highest_score:
+        # Distance weighting factor (closer = higher confidence boost)
+        dist_factor = max(0.0, 1.0 - (dist_meters / settings.DUPLICATE_DISTANCE_METERS))
+        combined_score = round(0.6 * sim_score + 0.4 * dist_factor, 3)
+
+        if combined_score >= 0.55 and combined_score > highest_score:
             highest_score = combined_score
             best_match_id = candidate.id
 
-    if highest_score >= threshold:
+    if highest_score >= 0.55:
         return best_match_id, highest_score
 
     return None, None

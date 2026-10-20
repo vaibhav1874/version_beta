@@ -211,13 +211,47 @@ export const IncidentDetail: React.FC<IncidentDetailProps> = ({
               </div>
             )}
 
-            <div style={{ fontSize: '0.78rem', color: '#e2e8f0' }}>
-              <strong>Priority Score:</strong>{' '}
-              <span style={{ color: 'var(--status-reported)', fontWeight: 700 }}>
-                {incident.ai_priority_score ? `${incident.ai_priority_score}/10` : `${incident.severity.toUpperCase()}`}
-              </span>
-              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                {incident.ai_priority_explanation || 'Assessed based on hazard category, severity, and critical infrastructure proximity.'}
+            <div style={{ fontSize: '0.78rem', color: '#e2e8f0', marginTop: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                <strong>Threat Index / Risk Score:</strong>
+                <span style={{
+                  color: (incident.ai_priority_score || (incident.severity === 'critical' ? 9 : incident.severity === 'high' ? 7 : 5)) >= 8 ? '#ff2a5f' : '#fbbf24',
+                  fontWeight: 800,
+                  fontSize: '0.88rem',
+                  fontFamily: 'monospace'
+                }}>
+                  {incident.ai_priority_score ? `${incident.ai_priority_score}/10` : `${incident.severity.toUpperCase()}`}
+                </span>
+              </div>
+
+              {/* 10-Segment LED Meter */}
+              <div style={{ display: 'flex', gap: '4px', height: '8px', margin: '0.4rem 0' }}>
+                {Array.from({ length: 10 }).map((_, idx) => {
+                  const score = incident.ai_priority_score || (incident.severity === 'critical' ? 9 : incident.severity === 'high' ? 7 : 5);
+                  const isActive = idx < score;
+                  let color = 'rgba(255, 255, 255, 0.08)';
+                  let glow = 'none';
+                  if (isActive) {
+                    if (idx >= 7) { color = '#ff2a5f'; glow = '0 0 6px #ff2a5f'; }
+                    else if (idx >= 4) { color = '#f59e0b'; glow = '0 0 6px #f59e0b'; }
+                    else { color = '#00f0ff'; glow = '0 0 6px #00f0ff'; }
+                  }
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        flex: 1,
+                        borderRadius: '2px',
+                        background: color,
+                        boxShadow: glow,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem', lineHeight: 1.4 }}>
+                {incident.ai_priority_explanation || 'Assessed dynamically based on hazard category, severity, and critical infrastructure proximity.'}
               </p>
             </div>
             

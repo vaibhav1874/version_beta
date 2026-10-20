@@ -36,6 +36,7 @@ export interface Incident {
   ai_duplicate_score?: number | null;
   ai_priority_explanation?: string | null;
   ai_priority_score?: number | null;
+  priority_score?: number | null;
   
   is_verified: boolean;
   reporter_name: string;

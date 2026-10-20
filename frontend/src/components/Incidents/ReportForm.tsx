@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { api, API_HOST } from '../../api/client';
+import { api } from '../../api/client';
 import type { HazardCategory, SeverityLevel, Incident } from '../../types/incident';
 
 interface ReportFormProps {
@@ -28,7 +28,6 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   const [reporterName, setReporterName] = useState('');
   const [reporterContact, setReporterContact] = useState('');
   
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadedPath, setUploadedPath] = useState<string | null>(null);
   
@@ -46,7 +45,6 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
 
       try {

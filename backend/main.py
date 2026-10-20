@@ -45,11 +45,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# --- CORS Middleware ---
+# --- CORS Middleware (Allows Vercel frontend, local dev, and preview branches) ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

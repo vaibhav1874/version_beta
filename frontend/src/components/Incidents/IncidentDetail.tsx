@@ -173,6 +173,7 @@ export const IncidentDetail: React.FC<IncidentDetailProps> = ({
 
   return (
     <div className="map-detail-card" id={`incident-detail-panel-${incident.id}`}>
+      <div className="mobile-sheet-handle" />
       <button
         id="close-incident-detail-btn"
         className="detail-close-btn"

@@ -20,6 +20,7 @@ export const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [systemOnline, setSystemOnline] = useState(true);
   const [activeView, setActiveView] = useState<'portal' | 'command'>('portal');
+  const [mobileTab, setMobileTab] = useState<'map' | 'feed'>('map');
   const [isSeeding, setIsSeeding] = useState(false);
 
   // Fetch incidents from backend
@@ -209,89 +210,70 @@ export const App: React.FC = () => {
           isSeeding={isSeeding}
         />
       ) : (
-        <main className="main-content" style={{ display: 'flex', flexDirection: 'column' }}>
-          {/* Top Telemetry Metric Strip (Sci-Fi DataV HUD) */}
-          <section className="command-telemetry-strip" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '0.8rem',
-            padding: '0.6rem 1.25rem',
-            background: 'linear-gradient(180deg, rgba(8, 14, 28, 0.95) 0%, rgba(5, 9, 18, 0.95) 100%)',
-            borderBottom: '1px solid rgba(0, 240, 255, 0.2)',
-          }}>
-            <div className="telemetry-box" style={{
-              background: 'rgba(13, 23, 42, 0.7)',
-              border: '1px solid rgba(0, 240, 255, 0.25)',
-              borderRadius: '6px',
-              padding: '0.5rem 0.8rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
+        <main className="main-content">
+          {/* Top Telemetry Metric Strip */}
+          <section className="command-telemetry-strip">
+            <div className="telemetry-box">
               <div>
-                <div style={{ fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>ACTIVE SIGNALS</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8', fontFamily: 'monospace' }}>{incidents.length}</div>
+                <div className="telemetry-label">ACTIVE SIGNALS</div>
+                <div className="telemetry-val text-blue">{incidents.length}</div>
               </div>
-              <div style={{ fontSize: '1.5rem', opacity: 0.8 }}>📡</div>
+              <div className="telemetry-emoji">📡</div>
             </div>
 
-            <div className="telemetry-box" style={{
-              background: 'rgba(13, 23, 42, 0.7)',
-              border: '1px solid rgba(239, 68, 68, 0.35)',
-              borderRadius: '6px',
-              padding: '0.5rem 0.8rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
+            <div className="telemetry-box box-critical">
               <div>
-                <div style={{ fontSize: '0.68rem', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.08em' }}>CRITICAL HAZARDS</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ff2a5f', fontFamily: 'monospace' }}>{criticalCount}</div>
+                <div className="telemetry-label text-red">CRITICAL HAZARDS</div>
+                <div className="telemetry-val text-red">{criticalCount}</div>
               </div>
-              <div style={{ fontSize: '1.5rem', opacity: 0.8 }}>🚨</div>
+              <div className="telemetry-emoji">🚨</div>
             </div>
 
-            <div className="telemetry-box" style={{
-              background: 'rgba(13, 23, 42, 0.7)',
-              border: '1px solid rgba(52, 211, 153, 0.3)',
-              borderRadius: '6px',
-              padding: '0.5rem 0.8rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
+            <div className="telemetry-box box-verified">
               <div>
-                <div style={{ fontSize: '0.68rem', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.08em' }}>VERIFIED GROUND TRUTH</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', fontFamily: 'monospace' }}>
-                  {verifiedCount} <span style={{ fontSize: '0.8rem', color: '#6ee7b7' }}>({incidents.length > 0 ? Math.round((verifiedCount / incidents.length) * 100) : 0}%)</span>
+                <div className="telemetry-label text-green">VERIFIED GROUND TRUTH</div>
+                <div className="telemetry-val text-green">
+                  {verifiedCount} <span className="telemetry-sub">({incidents.length > 0 ? Math.round((verifiedCount / incidents.length) * 100) : 0}%)</span>
                 </div>
               </div>
-              <div style={{ fontSize: '1.5rem', opacity: 0.8 }}>🛡️</div>
+              <div className="telemetry-emoji">🛡️</div>
             </div>
 
-            <div className="telemetry-box" style={{
-              background: 'rgba(13, 23, 42, 0.7)',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
-              borderRadius: '6px',
-              padding: '0.5rem 0.8rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
+            <div className="telemetry-box box-amber">
               <div>
-                <div style={{ fontSize: '0.68rem', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>SYSTEM RISK INDEX</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fbbf24', fontFamily: 'monospace' }}>
-                  {avgRisk} <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>/ 10</span>
+                <div className="telemetry-label text-amber">SYSTEM RISK INDEX</div>
+                <div className="telemetry-val text-amber">
+                  {avgRisk} <span className="telemetry-sub">/ 10</span>
                 </div>
               </div>
-              <div style={{ fontSize: '1.5rem', opacity: 0.8 }}>⚡</div>
+              <div className="telemetry-emoji">⚡</div>
             </div>
           </section>
 
+          {/* Mobile View Toggle Bar (Only visible on screens <= 900px) */}
+          <div className="mobile-view-toggle-bar">
+            <button
+              id="mobile-tab-map-btn"
+              type="button"
+              className={`mobile-view-btn ${mobileTab === 'map' ? 'active' : ''}`}
+              onClick={() => setMobileTab('map')}
+            >
+              🗺️ Tactical Map ({incidents.length})
+            </button>
+            <button
+              id="mobile-tab-feed-btn"
+              type="button"
+              className={`mobile-view-btn ${mobileTab === 'feed' ? 'active' : ''}`}
+              onClick={() => setMobileTab('feed')}
+            >
+              📋 Incident Feed ({incidents.length})
+            </button>
+          </div>
+
           {/* Incident Feed Column & Map Pane */}
-          <div className="dashboard-grid" style={{ flex: 1, minHeight: 0 }}>
+          <div className="dashboard-grid">
             {/* Left Feed Column */}
-            <aside className="feed-pane">
+            <aside className={`feed-pane ${mobileTab === 'feed' ? 'mobile-active' : 'mobile-hidden'}`}>
               <div className="feed-header">
                 <div className="feed-title-row">
                   <h2>Active Threat Incidents</h2>
@@ -363,7 +345,10 @@ export const App: React.FC = () => {
                         key={inc.id}
                         id={`incident-card-${inc.id}`}
                         className={`incident-card cat-${inc.category} ${isSelected ? 'selected' : ''}`}
-                        onClick={() => setSelectedIncident(inc)}
+                        onClick={() => {
+                          setSelectedIncident(inc);
+                          setMobileTab('map');
+                        }}
                       >
                         <div className="card-top">
                           <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
@@ -471,7 +456,7 @@ export const App: React.FC = () => {
             </aside>
 
             {/* Right Map View with Floating Inspector */}
-            <section className="map-pane">
+            <section className={`map-pane ${mobileTab === 'map' ? 'mobile-active' : 'mobile-hidden'}`}>
               <MapDashboard
                 incidents={incidents}
                 selectedIncident={selectedIncident}
